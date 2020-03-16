@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
+      .text-muted{
+        color : red !important;
+      }
     </style>
     <title>MAPENDO sarl </title>
 </head>
@@ -33,41 +36,47 @@
                                     <form id="form">
                                         <div class="form-group">
                                           <label for="nom">Nom</label>
-                                          <input type="text" class="form-control" id="nom" name="nom">
+                                          <input type="text" class="form-control" id="nom" name="nom" required>
                                           <small id="nomError" class="form-text text-muted"></small>
                                         </div>
                                          <div class="form-group">
                                           <label for="prenom">Prenom</label>
-                                          <input type="text" class="form-control" id="prenom" name="prenom">
+                                          <input type="text" class="form-control" id="prenom" name="prenom" required>
                                           <small id="prenomError" class="form-text text-muted"></small>
                                         </div>
                                          <div class="form-group">
                                           <label for="email">Email</label>
-                                          <input type="email" class="form-control" id="email" name="email">
+                                          <input type="email" class="form-control" id="email" name="email" required>
                                           <small id="emailError" class="form-text text-muted"></small>
                                         </div>
                                          <div class="form-group">
-                                          <label for="poste">poste</label>
-                                          <input type="text" class="form-control" id="poste" name="poste">
-                                          <small id="posteError" class="form-text text-muted"></small>
+                                          <label for="age">age</label>
+                                          <input type="number" class="form-control" id="age" name="age">
+                                          <small id="ageError" class="form-text text-muted"></small>
                                         </div>
+                                        <div class="form-group">
+                                            <label for="poste">poste</label>
+                                            <input type="text" class="form-control" id="poste" name="poste" required>
+                                            <small id="posteError" class="form-text text-muted"></small>
+                                          </div>
                                          <div class="form-group">
                                           <label for="numeroTelephone">numeroTelephone</label>
-                                          <input type="text" class="form-control" id="numeroTelephone" name="numeroTelephone">
+                                          <input type="text" class="form-control" id="numeroTelephone" name="numeroTelephone" required>
                                           <small id="numeroTelephoneError" class="form-text text-muted"></small>
                                         </div>
                                         <div class="form-group">
                                             <!-- <input type="checkbox" class="form-check-input" id="estMarie" name="estMarie"> -->
                                         <label  for="estMarie" >Est marié</label>
-                                        <select class="form-control" id="estMarie" name="estMarie">
+                                        <select class="form-control" id="estMarie" name="estMarie" required>
                                             <option>Oui</option>
                                             <option>Non</option>
                                         </select>
+                                        <small id="estMarieError" class="form-text text-muted"></small>
                                         </div>
                                         <div class="form-group">
                                           <label for="pays">Pays</label>
-                                          <input type="text" class="form-control" id="pays" name="pays">
-                                          <small id="paysError" class="form-text text-muted"></small>
+                                          <input type="text" class="form-control" id="pays" name="pays" required>
+                                          <small id="paysError" class="form-text text-muted "></small>
                                         </div>
                                       </form>
                                 </div>
@@ -86,6 +95,7 @@
                             <th scope="col">Nom</th>
                             <th scope="col">Prenom</th>
                             <th scope="col">email</th>
+                            <th scope="col">Age</th>
                             <th scope="col">Poste</th>
                             <th scope="col">Numero de telephone</th>
                             <th scope="col">Marié(e)</th>

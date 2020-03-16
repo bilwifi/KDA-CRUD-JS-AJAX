@@ -2,12 +2,17 @@ const btnSubmit = document.querySelector('#submit');
 const form = document.querySelector('#form');
 const tbody = document.querySelector('#tbody');
 
+form.addEventListener('input',function(){
+    validateForm(form);
+})
 //add new employé
 btnSubmit.addEventListener('click',function(e){
-    const employe = createUserObject(form);
-    createRowInTable(tbody,employe);
-    form.reset();
-    $('#staticBackdrop').modal('hide')
+    if(validateForm(form)){
+        const employe = createUserObject(form);
+        createRowInTable(tbody,employe);
+        form.reset();
+        $('#staticBackdrop').modal('hide')
+    }
 })
 
 
@@ -31,4 +36,19 @@ function createRowInTable(tagOfTable,objectUser){
         }
     }
     tagOfTable.append(tr);
+}
+
+function validateForm(tagForm){
+    let error;
+    for (input of tagForm){
+        if(input.required){
+            error = document.querySelector('#'+input.name+'Error');
+            if(input.value ==""){
+                error.innerHTML = `Le champ ${input.name} est requis`;
+            }else{
+                error.innerHTML ='';
+            }
+        }
+    }
+    return error.innerHTML == "" ? true : false;
 }
