@@ -104,4 +104,10 @@ function addEventListenerInBtnUpdateAndDelete(objectUser) {
     btnSubmit.innerText = "Modifier";
     $("#staticBackdrop").modal("show");
   });
+  btnDelete.addEventListener("click",function(e){
+    if(confirm(`Etes-vous sûr de supprimer l'employé ${objectUser.prenom}  ${objectUser.nom}`)){
+      const tr = document.querySelector("#tr-" + objectUser._id);
+      tr.parentNode.removeChild(tr);
+    }
+  });
 }
