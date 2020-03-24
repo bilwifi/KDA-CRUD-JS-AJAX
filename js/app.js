@@ -2,7 +2,6 @@ const btnAjouter = document.querySelector("#btnAjouter");
 const btnSubmit = document.querySelector("#submit");
 const form = document.querySelector("#form");
 const tbody = document.querySelector("#tbody");
-// const btnEdit = document.querySelectorAll(".btn-edit");
 
 btnAjouter.addEventListener("click", function() {
   form.reset();
@@ -11,20 +10,16 @@ btnAjouter.addEventListener("click", function() {
 form.addEventListener("input", function() {
   validateForm(form);
 });
-//add new employé
+//add new employé or update employé
 btnSubmit.addEventListener("click", function(e) {
   if (validateForm(form)) {
     const employe = createUserObject(form);
     const tr = document.querySelector("#tr-" + employe["_id"]);
-    console.log("btnsubmit");
-    console.log(tr);
     createRowInTable(tbody, employe, tr);
     form.reset();
     $("#staticBackdrop").modal("hide");
   }
 });
-
-//update employé
 
 // My functions
 function createUserObject(tagForm) {
@@ -49,7 +44,6 @@ function createRowInTable(tagOfTable, objectUser, tagTr) {
     tr = document.createElement("tr");
     tr.setAttribute("id", "tr-" + objectUser["_id"]);
     tagOfTable.append(tr);
-
   }
   for (const attribute in objectUser) {
     if (objectUser.hasOwnProperty(attribute)) {
@@ -104,8 +98,12 @@ function addEventListenerInBtnUpdateAndDelete(objectUser) {
     btnSubmit.innerText = "Modifier";
     $("#staticBackdrop").modal("show");
   });
-  btnDelete.addEventListener("click",function(e){
-    if(confirm(`Etes-vous sûr de supprimer l'employé ${objectUser.prenom}  ${objectUser.nom}`)){
+  btnDelete.addEventListener("click", function(e) {
+    if (
+      confirm(
+        `Etes-vous sûr de supprimer l'employé ${objectUser.prenom}  ${objectUser.nom}`
+      )
+    ) {
       const tr = document.querySelector("#tr-" + objectUser._id);
       tr.parentNode.removeChild(tr);
     }
