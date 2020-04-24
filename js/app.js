@@ -14,11 +14,19 @@ form.addEventListener("input", function() {
 btnSubmit.addEventListener("click", function(e) {
   if (validateForm(form)) {
     const employe = createUserObject(form);
-    const tr = document.querySelector("#tr-" + employe["_id"]);
-    createRowInTable(tbody, employe, tr);
-    form.reset();
-    $("#staticBackdrop").modal("hide");
+    if(e.target.innerText == "Ajouter"){
+      const tr = document.querySelector("#tr-" + employe["_id"]);
+      createRowInTable(tbody, employe, tr);
+      createEmploye(employe);
+      form.reset();
+      $("#staticBackdrop").modal("hide");
+    }else if(e.target.innerText == "Modifier"){
+      updateEmploye(employe);
+    }else{
+      alert("Une erreure est survenue");
+    }
   }
+  
 });
 
 // My functions
@@ -27,24 +35,17 @@ function createUserObject(tagForm) {
   for (input of tagForm) {
     userObjet[input.name] = input.value;
   }
-  userObjet["_id"] =
-    userObjet["_id"] != ""
-      ? userObjet["_id"]
-      : Math.floor(Math.random() * Math.floor(1000));
+  // userObjet["_id"] =
+  //   userObjet["_id"] != ""
+  //     ? userObjet["_id"]
+  //     : Math.floor(Math.random() * Math.floor(1000));
   return userObjet;
 }
 
-function createRowInTable(tagOfTable, objectUser, tagTr) {
+function createRowInTable(tagOfTable, objectUser) {
   let tr;
-  // Si l'utilisateur existe, on fait la modification de la ligne
-  if (tagTr) {
-    tr = tagTr;
-    tr.innerHTML = "";
-  } else {
     tr = document.createElement("tr");
-    tr.setAttribute("id", "tr-" + objectUser["_id"]);
     tagOfTable.append(tr);
-  }
   for (const attribute in objectUser) {
     if (objectUser.hasOwnProperty(attribute)) {
       td = document.createElement("td");
@@ -55,23 +56,22 @@ function createRowInTable(tagOfTable, objectUser, tagTr) {
   let btn = document.createElement("td");
   btn.innerHTML = createBtnUpdateAndDelete(objectUser._id);
   tr.append(btn);
-
   addEventListenerInBtnUpdateAndDelete(objectUser);
 }
 
 function validateForm(tagForm) {
   let error;
-  for (input of tagForm) {
-    if (input.required) {
-      error = document.querySelector("#" + input.name + "Error");
-      if (input.value == "") {
-        error.innerHTML = `Le champ ${input.name} est requis`;
-      } else {
-        error.innerHTML = "";
-      }
+    for (input of tagForm){
+        if(input.required){
+            error = document.querySelector('#'+input.name+'Error');
+            if(input.value ==""){
+                error.innerHTML = `Le champ ${input.name} est requis`;
+            }else{
+                error.innerHTML ='';
+            }
+        }
     }
-  }
-  return error.innerHTML == "" ? true : false;
+    return error.innerHTML == "" ? true : false;
 }
 
 function fillForm(tagForm, user) {
@@ -104,8 +104,81 @@ function addEventListenerInBtnUpdateAndDelete(objectUser) {
         `Etes-vous sûr de supprimer l'employé ${objectUser.prenom}  ${objectUser.nom}`
       )
     ) {
-      const tr = document.querySelector("#tr-" + objectUser._id);
-      tr.parentNode.removeChild(tr);
+      deleteEmploye(objectUser._id);
     }
   });
 }
+
+
+// Ajax
+const conf = config();
+
+function getListEmploye(){
+axios.get(conf.getUrl())
+  .then(function(response){
+    for (data of response.data){
+      createRowInTable(tbody,formatData(data));
+    }
+      
+  })
+  .catch(function(error){
+    alert('Une erreure est survenue !!! ')
+    console.log(error.response)
+  })
+}
+
+function createEmploye(employe){
+  console.log(employe);
+  
+  delete employe._id;
+  axios.post(conf.getUrl(),employe)
+    .then(function(response){
+      alert("L'employé a été créé avec succès");
+    })
+    .catch(function(error){
+      alert('Une erreure est survenue !!! ')
+      console.log(error.response)
+    })
+  }
+
+function deleteEmploye(id){
+  axios.delete(conf.getUrl(`/${id}`))
+  .then(function(response){
+      alert("L'employé a été supprimer avec succès");
+  })
+  .catch(function(error){
+    alert('Une erreure est survenue !!! ')
+    console.log(error.response)
+  })
+}
+
+function updateEmploye(employe){
+  const id = employe._id
+  delete employe._id;
+  console.log(employe);
+  
+  axios.put(conf.getUrl(`/${id}`),employe)
+  .then(function(response){
+      alert("L'employé a été modifier avec succès");
+  })
+  .catch(function(error){
+    alert('Une erreure est survenue !!! ')
+    console.log(error)
+  })
+}
+
+function formatData(data){
+  return {
+    _id : data._id,
+    nom : data.nom,
+    prenom : data.prenom,
+    email : data.email,
+    age : data.age ? data.age : '',
+    poste : data.poste,
+    numeroTelephone : data.numeroTelephone,
+    email : data.email,
+    estMarie : data.estMarie ? "OUI" : "NON",
+    pays : data.pays,
+  }
+}
+getListEmploye();
