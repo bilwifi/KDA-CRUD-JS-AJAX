@@ -1,184 +1,175 @@
-const btnAjouter = document.querySelector("#btnAjouter");
+const conf = config();
+const tbody = document.querySelector("#tbody");
+const btnAdd = document.querySelector("#btnAjouter");
 const btnSubmit = document.querySelector("#submit");
 const form = document.querySelector("#form");
-const tbody = document.querySelector("#tbody");
 
-btnAjouter.addEventListener("click", function() {
-  form.reset();
-  btnSubmit.innerText = "Ajouter";
-});
-form.addEventListener("input", function() {
-  validateForm(form);
-});
-//add new employé or update employé
-btnSubmit.addEventListener("click", function(e) {
-  if (validateForm(form)) {
-    const employe = createUserObject(form);
-    if(e.target.innerText == "Ajouter"){
-      const tr = document.querySelector("#tr-" + employe["_id"]);
-      createRowInTable(tbody, employe, tr);
-      createEmploye(employe);
-      form.reset();
-      $("#staticBackdrop").modal("hide");
-    }else if(e.target.innerText == "Modifier"){
-      updateEmploye(employe);
-    }else{
-      alert("Une erreure est survenue");
-    }
-  }
+$(document).ready(function(){
+    getEmployes();
+})
+// Get
+function getEmployes() {
+  axios
+    .get(conf.getUrl())
+    .then(function (response) {
+      for (let employe of response.data) {
+        afficherEmploye(formatData(employe));
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+}
+// post and put
+btnAdd.addEventListener('click',function(){
+    form.reset();
+    btnSubmit.innerText = "Ajouter";
+  });
+btnSubmit.addEventListener("click", function () {
+  console.log(validerFormulaire(form));
   
+  if (validerFormulaire(form)) {
+    const employe = recupererToutLesInput(form);
+    if (btnSubmit.textContent == "Ajouter") {
+      addEmploye(employe);
+    } else if (btnSubmit.textContent == "Modifier") {
+      updateEmploye(employe);
+    }
+  }
 });
-
-// My functions
-function createUserObject(tagForm) {
-  const userObjet = {};
-  for (input of tagForm) {
-    userObjet[input.name] = input.value;
-  }
-  // userObjet["_id"] =
-  //   userObjet["_id"] != ""
-  //     ? userObjet["_id"]
-  //     : Math.floor(Math.random() * Math.floor(1000));
-  return userObjet;
+// post
+function addEmploye(data) {
+  delete data._id;
+  axios
+    .post(conf.getUrl(), data)
+    .then(function (response) {
+      $("#staticBackdrop").modal("hide");
+      tbody.innerHTML = " ";
+      getEmployes();
+      alert("L'employé ajouté avec succèss");
+    })
+    .catch(function (error) {
+      alert("Une erreure est survenue");
+      console.log(error.response);
+    });
 }
-
-function createRowInTable(tagOfTable, objectUser) {
-  let tr;
-    tr = document.createElement("tr");
-    tagOfTable.append(tr);
-  for (const attribute in objectUser) {
-    if (objectUser.hasOwnProperty(attribute)) {
-      td = document.createElement("td");
-      td.append(objectUser[attribute]);
-      tr.append(td);
+// put
+function updateEmploye(data) {
+  const id = data._id;
+  delete data._id;
+  axios
+    .put(conf.getUrl(`/${id}`), data)
+    .then(function (response) {
+      $("#staticBackdrop").modal("hide");
+      tbody.innerHTML = " ";
+      getEmployes();
+      alert("L'employé modifié avec succèss");
+    })
+    .catch(function (error) {
+      alert("Une erreure est survenue");
+      console.log(error.response);
+    });
+}
+// Delete
+function deleteEmploye(employe) {
+  axios
+    .delete(conf.getUrl(`/${employe._id}`))
+    .then(function (response) {
+      $("#staticBackdrop").modal("hide");
+      tbody.innerHTML = " ";
+      getEmployes();
+      alert("L'employé supprimé avec succèss");
+    })
+    .catch(function (error) {
+      alert("Une erreure est survenue");
+      console.log(error.response);
+    });
+}
+// Functions utilitaires
+function afficherEmploye(data) {
+  let newTr = document.createElement("tr");
+  for (const attribut in data) {
+    if (data.hasOwnProperty(attribut)) {
+      let newTd = document.createElement("td");
+      newTd.innerHTML = data[attribut];
+      newTr.appendChild(newTd);
     }
   }
-  let btn = document.createElement("td");
-  btn.innerHTML = createBtnUpdateAndDelete(objectUser._id);
-  tr.append(btn);
-  addEventListenerInBtnUpdateAndDelete(objectUser);
+  // btn ajouter et supprimmer
+  newTr.innerHTML += createBntUpdateDelete(data._id);
+  tbody.appendChild(newTr);
+  addEventListenerInBtnUpdateDelete(data);
 }
 
-function validateForm(tagForm) {
+function formatData(data) {
+  return {
+    _id: data._id,
+    nom: data.nom,
+    prenom: data.prenom,
+    email: data.email,
+    poste: data.poste,
+    numeroTelephone: data.numeroTelephone,
+    estMarie: data.estMarie ? "OUI" : "NON",
+    pays: data.pays,
+  };
+}
+
+function recupererToutLesInput(form) {
+  const employeObject = {};
+  for (const input of form) {
+    employeObject[input.name] = input.value;
+  }
+  return employeObject;
+}
+
+function validerFormulaire(formulaire) {
   let error;
-    for (input of tagForm){
-        if(input.required){
-            error = document.querySelector('#'+input.name+'Error');
-            if(input.value ==""){
-                error.innerHTML = `Le champ ${input.name} est requis`;
-            }else{
-                error.innerHTML ='';
-            }
-        }
-    }
-    return error.innerHTML == "" ? true : false;
-}
-
-function fillForm(tagForm, user) {
-  for (attribute in user) {
-    if (tagForm[attribute]) {
-      tagForm[attribute].value = user[attribute];
+  let validated = true;
+  for (input of formulaire) {
+    if (input.required) {
+      error = document.querySelector("#" + input.name + "Error");
+      if (input.value == "") {
+        validated = false;
+        error.innerHTML = `Le champ ${input.name} est requis`;
+      } else {
+        error.innerHTML = "";
+      }
     }
   }
+  return validated;
 }
 
-function createBtnUpdateAndDelete(userId) {
+function createBntUpdateDelete(employe_id) {
   return `<td>
-            <button class="btn-edit btn btn-primary" id="edit-${userId}"><i class="fa fa-edit"></i></button>
-             <button class="btn-delete btn btn-danger" id="delete-${userId}"><i class="fa fa-trash"></i></button>
-          </td>`;
+        <button class="btn-edit btn btn-primary" id="edit-${employe_id}"><i class="fa fa-edit"></i></button>
+       <button class="btn-delete btn btn-danger" id="delete-${employe_id}"><i class="fa fa-trash"></i></button>
+    </td>`;
 }
 
-function addEventListenerInBtnUpdateAndDelete(objectUser) {
-  const btnEdit = document.querySelector("#edit-" + objectUser._id);
-  const btnDelete = document.querySelector("#delete-" + objectUser._id);
-
-  btnEdit.addEventListener("click", function(e) {
-    fillForm(form, objectUser);
-    btnSubmit.innerText = "Modifier";
+function addEventListenerInBtnUpdateDelete(employe) {
+  const btnEdit = document.getElementById(`edit-${employe._id}`);
+  const btnDelete = document.getElementById(`delete-${employe._id}`);
+  btnEdit.addEventListener("click", function (e) {
+    preremplirFormulaire(form, employe);
+    btnSubmit.innerHTML = "Modifier";
     $("#staticBackdrop").modal("show");
   });
-  btnDelete.addEventListener("click", function(e) {
+
+  btnDelete.addEventListener("click", function () {
     if (
       confirm(
-        `Etes-vous sûr de supprimer l'employé ${objectUser.prenom}  ${objectUser.nom}`
+        `Êtes-vous sûr de supprimer l'employé ${employe.prenom} ${employe.nom} ???`
       )
     ) {
-      deleteEmploye(objectUser._id);
+      deleteEmploye(employe);
     }
   });
 }
 
-
-// Ajax
-const conf = config();
-
-function getListEmploye(){
-axios.get(conf.getUrl())
-  .then(function(response){
-    for (data of response.data){
-      createRowInTable(tbody,formatData(data));
+function preremplirFormulaire(form, employe) {
+  for (const attribut in employe) {
+    if (form[attribut]) {
+      form[attribut].value = employe[attribut];
     }
-      
-  })
-  .catch(function(error){
-    alert('Une erreure est survenue !!! ')
-    console.log(error.response)
-  })
-}
-
-function createEmploye(employe){
-  console.log(employe);
-  
-  delete employe._id;
-  axios.post(conf.getUrl(),employe)
-    .then(function(response){
-      alert("L'employé a été créé avec succès");
-    })
-    .catch(function(error){
-      alert('Une erreure est survenue !!! ')
-      console.log(error.response)
-    })
-  }
-
-function deleteEmploye(id){
-  axios.delete(conf.getUrl(`/${id}`))
-  .then(function(response){
-      alert("L'employé a été supprimer avec succès");
-  })
-  .catch(function(error){
-    alert('Une erreure est survenue !!! ')
-    console.log(error.response)
-  })
-}
-
-function updateEmploye(employe){
-  const id = employe._id
-  delete employe._id;
-  console.log(employe);
-  
-  axios.put(conf.getUrl(`/${id}`),employe)
-  .then(function(response){
-      alert("L'employé a été modifier avec succès");
-  })
-  .catch(function(error){
-    alert('Une erreure est survenue !!! ')
-    console.log(error)
-  })
-}
-
-function formatData(data){
-  return {
-    _id : data._id,
-    nom : data.nom,
-    prenom : data.prenom,
-    email : data.email,
-    age : data.age ? data.age : '',
-    poste : data.poste,
-    numeroTelephone : data.numeroTelephone,
-    email : data.email,
-    estMarie : data.estMarie ? "OUI" : "NON",
-    pays : data.pays,
   }
 }
-getListEmploye();
