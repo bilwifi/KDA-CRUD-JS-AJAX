@@ -4,9 +4,32 @@ const btnAdd = document.querySelector("#btnAjouter");
 const btnSubmit = document.querySelector("#submit");
 const form = document.querySelector("#form");
 
-$(document).ready(function(){
-    getEmployes();
-})
+$(document).ready(function () {
+  axios.interceptors.request.use(
+    (config) => {
+      loader_on();
+      return config;
+    },
+    (error) => {
+      loader_off();
+      console.log('ajax stop')
+
+      return Promise.reject(error);
+    }
+  );
+
+  axios.interceptors.response.use(
+    (response) => {
+      loader_off();
+      return response;
+    },
+    (error) => {
+      loader_off();
+      return Promise.reject(error);
+    }
+  );
+  getEmployes();
+});
 // Get
 function getEmployes() {
   axios
@@ -21,14 +44,17 @@ function getEmployes() {
     });
 }
 // post and put
-btnAdd.addEventListener('click',function(){
-    form.reset();
-    btnSubmit.innerText = "Ajouter";
-  });
+
+form.addEventListener("input", function() {
+  validerFormulaire(form);
+});
+btnAdd.addEventListener("click", function () {
+  form.reset();
+  btnSubmit.innerText = "Ajouter";
+});
 btnSubmit.addEventListener("click", function () {
-  console.log(validerFormulaire(form));
-  
   if (validerFormulaire(form)) {
+    $("#staticBackdrop").modal("hide");
     const employe = recupererToutLesInput(form);
     if (btnSubmit.textContent == "Ajouter") {
       addEmploye(employe);
@@ -46,7 +72,10 @@ function addEmploye(data) {
       $("#staticBackdrop").modal("hide");
       tbody.innerHTML = " ";
       getEmployes();
-      alert("L'employé ajouté avec succèss");
+      $.alert("L'employé ajouté avec succèss", {
+        type: "success",
+        position: ["top-center", [-0.42, 0]],
+      });
     })
     .catch(function (error) {
       alert("Une erreure est survenue");
@@ -63,12 +92,16 @@ function updateEmploye(data) {
       $("#staticBackdrop").modal("hide");
       tbody.innerHTML = " ";
       getEmployes();
-      alert("L'employé modifié avec succèss");
+      $.alert("L'employé modifié avec succèss", {
+        type: "success",
+        position: ["top-center", [-0.42, 0]],
+      });
     })
     .catch(function (error) {
       alert("Une erreure est survenue");
       console.log(error.response);
     });
+
 }
 // Delete
 function deleteEmploye(employe) {
@@ -78,7 +111,10 @@ function deleteEmploye(employe) {
       $("#staticBackdrop").modal("hide");
       tbody.innerHTML = " ";
       getEmployes();
-      alert("L'employé supprimé avec succèss");
+      $.alert("L'employé supprimé avec succèss", {
+        type: "success",
+        position: ["top-center", [-0.42, 0]],
+      });
     })
     .catch(function (error) {
       alert("Une erreure est survenue");
@@ -172,4 +208,13 @@ function preremplirFormulaire(form, employe) {
       form[attribut].value = employe[attribut];
     }
   }
+}
+function loader_on(){
+  $("#tbody").hide();
+  $("#loader").show();
+}
+
+function loader_off(){
+  $("#loader").hide();
+  $("#tbody").show();
 }
